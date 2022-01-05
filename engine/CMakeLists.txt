@@ -1,8 +1,6 @@
 
 
-set(HEADERS src/test.h)
-set(SRCS src/test.c)
+set(HEADERS src/core/logger.h src/core/asserts.h)
+set(SRCS src/core/logger.c)
 
 add_library(engine ${SRCS} ${HEADERS})
-
-set_target_properties(engine PROPERTIES INCLUDE_DIRS ${HEADERS} )
