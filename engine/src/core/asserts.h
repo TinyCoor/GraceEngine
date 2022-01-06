@@ -34,7 +34,7 @@ void report_assertion_failure(const char* expression,
 #define KASSERT_MSG(expr, message) \
     {                                                                       \
         if(expr){                                                           \
-        }else {                                                             \
+        } else {                                                             \
               report_assertion_failure(#expr,message,__FILE__,__LINE__);     \
               debugBreak();                                                  \
         }                                                                    \
