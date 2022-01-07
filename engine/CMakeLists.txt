@@ -14,6 +14,7 @@ set(HEADERS
         src/core/logger.h
         src/core/asserts.h
         src/core/application.c
+        src/core/kmemory.c
         src/platform/platform.h
 
         ${platform_src}

@@ -16,7 +16,7 @@ b8 create_game(game* out_game)
     out_game->on_resize = game_on_resize;
 
     /// todo memory subsystem
-    out_game->state=malloc(sizeof(game_state));
+    out_game->state=kallocate(sizeof(game_state),MEMORY_TAG_GAME);
     return true;
 }
 
