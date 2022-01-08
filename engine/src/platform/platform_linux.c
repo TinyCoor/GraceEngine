@@ -2,9 +2,16 @@
 // Created by 12132 on 2022/1/7.
 //
 #include "platform.h"
-#include "defines.h"
 
-#if KPLATFORM_LINUX
+
+//#if KPLATFORM_LINUX
+#include "defines.h"
+#include "core/input.h"
+#include "core/event.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <xcb.h>
 #include <x11/keysym.h>
 #include <x11/XKBlib.h>
@@ -21,9 +28,6 @@
 #endif
 
 
-#include <stdilib.h>
-#include <stdio.h>
-#include <string.h>
 
 typedef struct internal_state{
     Display* display;
@@ -156,7 +160,7 @@ void platform_shutdown(platform_state* state)
 
 }
 
-b8 platform_pump_message(platform_state* state)
+b8 platform_pump_message(platform_state* plat_state)
 {
     internal_state *state = (internal_state *) (plat_state->internal_state);
 
@@ -172,7 +176,18 @@ b8 platform_pump_message(platform_state* state)
         switch(event->response_type & ~0x80) {
             case XCB_KEY_PRESS:
             case XCB_KEY_RELEASE:{
+                xcb_key_press_event_t* t = (xcb_key_press_event_t*)event;
+                b8 pressed = event->response_type = XCB_KEY_PRESS;
+                xcb_keycode_t code = kb_event->detail;
+                KeySym keysym= XkbKeycodeToKeySym(state->display,
+                                            (KeyCode)code,
+                                            0,
+                                            code & ShiftMask ? 1: 0);
 
+                keys  key = translate_keycode(keysym);
+
+                // input
+                input_process_key(key,pressed);
             }break;
             case XCB_BUTTON_PRESS:
             case XCB_BUTTON_RELEASE:{
@@ -262,4 +277,4 @@ void platform_sleep(u64 ms)
 
 }
 
-#endif
+//#endif

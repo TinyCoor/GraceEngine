@@ -23,6 +23,7 @@ set(HEADERS
         src/container/darray.h
         src/container/darray.c
         ${platform_src}
+        src/platform/platform_linux.c
         )
 
 set(SRCS src/core/logger.c)
