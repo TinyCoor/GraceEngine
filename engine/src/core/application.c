@@ -8,6 +8,7 @@
 #include "../game_types.h"
 #include "../platform/platform.h"
 #include "core/event.h"
+#include "input.h"
 
 typedef struct application_state{
     game* game_inst;
@@ -23,6 +24,10 @@ typedef struct application_state{
 static b8 initialized = false;
 static application_state app_state;
 
+b8 application_on_event(u16 code,void* sender,void* listener_inst,event_context context);
+b8 application_on_key(u16 code,void* sender,void* listener_inst,event_context context);
+
+
 b8 application_create(game* game_inst)
 {
     if(initialized) {
@@ -34,6 +39,9 @@ b8 application_create(game* game_inst)
 
     /// todo
     initialize_logging();
+
+    // init input system
+    input_initialize();
 
     /// todo remove
     KDEBUG("This is test1: %f", 3.1415926);
@@ -49,6 +57,11 @@ b8 application_create(game* game_inst)
         KERROR("Event Subsystem init failed Application stop");
         return false;
     }
+
+    event_register(EVENT_CODE_APPLICATION_QUIT,0,application_on_event);
+    event_register(EVENT_CODE_KEY_RELEASED,0,application_on_key);
+    event_register(EVENT_CODE_KEY_PRESSED, 0,application_on_key);
+
 
     if(!platform_startup(&app_state.platform,
                        game_inst->app_config.name,
@@ -75,7 +88,7 @@ b8 application_run()
 {
     KINFO(get_memory_usage_str());
     while (app_state.is_running){
-        if( !platform_pump_message(&app_state.platform)){
+        if(!platform_pump_message(&app_state.platform)){
             app_state.is_running = false;
 
         }
@@ -92,14 +105,55 @@ b8 application_run()
                 break;
             }
 
+            input_update(0);
         }
     }
 
     app_state.is_running =false;
 
+    event_unregister(EVENT_CODE_APPLICATION_QUIT,0,application_on_event);
+    event_unregister(EVENT_CODE_KEY_RELEASED,0,application_on_key);
+    event_unregister(EVENT_CODE_KEY_PRESSED, 0,application_on_key);
+
+    input_shutdown();
     event_shutdown();
     platform_shutdown(&app_state.platform);
 
     return true;
 
+}
+
+b8 application_on_event(u16 code,void* sender,void* listener_inst,event_context context)
+{
+    switch (code) {
+        case EVENT_CODE_APPLICATION_QUIT:{
+            KINFO("EVENT_CODE_APPLICATION_QUIT pressed shutdown.\n");
+            app_state.is_running = false;
+        }
+    }
+    return false;
+}
+
+b8 application_on_key(u16 code,void* sender,void* listener_inst,event_context context)
+{
+    if(code == EVENT_CODE_KEY_PRESSED) {
+        u16 key_code = context.data.u16[0];
+        if(key_code == KEY_ESCAPE){
+            event_context data ={};
+            event_fire(EVENT_CODE_APPLICATION_QUIT,0,data);
+            return true;
+        } else if(key_code ==KEY_A) {
+            KDEBUG("Explicit - A pressed");
+        }else {
+            KDEBUG("%c key is pressed",key_code);
+        }
+    } else if(code == EVENT_CODE_KEY_RELEASED) {
+        u16 key_code = context.data.u16[0];
+        if (key_code == KEY_B){
+            KDEBUG("Explicit - B released");
+        } else {
+            KDEBUG("%c key is released",key_code);
+        }
+    }
+    return false;
 }

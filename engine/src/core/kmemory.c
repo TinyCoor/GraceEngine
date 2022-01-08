@@ -65,7 +65,7 @@ void kfree(void* block,u64 size,memory_tag tag)
     if(tag == MEMORY_TAG_UNKNOWN ) {
         KWARN( "kallocate called using MEMORY_TAG_UNKNOWN. Re-class this allocation.");
     }
-    stats.total_allocated -=size;
+    stats.total_allocated -= size;
     stats.tagged_allocations[tag] -= size;
 
     platform_free(block,false);

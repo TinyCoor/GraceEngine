@@ -19,7 +19,7 @@ typedef struct event_code_entry{
 #define MAX_MESSAGE_CODES 16384
 
 typedef struct event_system_state{
-    event_code_entry  registered[MAX_MESSAGE_CODES];
+    event_code_entry registered[MAX_MESSAGE_CODES];
 }event_system_state;
 
 static b8 is_initialized = false;
@@ -36,7 +36,6 @@ b8 event_initialize()
     is_initialized = true;
     return true;
 }
-
 
 void event_shutdown()
 {

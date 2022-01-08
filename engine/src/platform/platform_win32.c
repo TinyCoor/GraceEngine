@@ -3,12 +3,15 @@
 //
 
 #include "platform.h"
-#include "../core/logger.h"
+
 
 
 #if KPLATFORM_WINDOWS
+#include "core/input.h"
+#include "core/logger.h"
 #include <windows.h>
 #include <windowsx.h>
+
 
 LRESULT CALLBACK win32_process_message(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
@@ -31,26 +34,31 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, UINT message, WPARAM wparam, L
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
+        case WM_KEYUP:
         case WM_SYSKEYUP: {
-            /// b8 pressed  =(message == WM_KEYDOWN || message == WM_SYSKEYDOWN);
+            b8 pressed  =(message == WM_KEYDOWN || message == WM_SYSKEYDOWN);
+            keys key=(u16)wparam;
             /// TODO input processing
+            input_process_key(key,pressed);
+            return 0;
         }
-            break;
         case WM_MOUSEMOVE: {
             /// mouse move
-            /// i32 x_pos = GET_X_LPARAM(lparam);
-            /// i32 y_pos = GET_Y_LPARAM(lparam);
+            i32 x_pos = GET_X_LPARAM(lparam);
+            i32 y_pos = GET_Y_LPARAM(lparam);
+
             /// TODO input processing
-        }
-            break;
+            input_process_mouse_move(x_pos,y_pos);
+        }break;
 
         case WM_MOUSEHWHEEL: {
             i32 z_delta = GET_WHEEL_DELTA_WPARAM(wparam);
             if (z_delta != 0) {
                 z_delta = (z_delta < 0) ? -1 : 1;
+                input_process_mouse_wheel(z_delta);
             }
-        }
-            break;
+
+        }break;
 
         case WM_LBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -58,8 +66,27 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, UINT message, WPARAM wparam, L
         case WM_LBUTTONUP:
         case WM_MBUTTONUP:
         case WM_RBUTTONUP: {
-            /// b8 pressed = message== WM_LBUTTONDOWN || message==WM_MBUTTONDOWN || message==WM_RBUTTONDOWN;
+            b8 pressed = message== WM_LBUTTONDOWN || message==WM_MBUTTONDOWN || message==WM_RBUTTONDOWN;
             /// todo input process
+            buttons mouse_button = BUTTON_MAX_BUTTONS;
+                switch (message) {
+                case WM_LBUTTONDOWN:
+                case WM_LBUTTONUP:
+                    mouse_button= BUTTON_LEFT;
+                    break;
+                case WM_RBUTTONDOWN:
+                case WM_RBUTTONUP:
+                    mouse_button= BUTTON_RIGHT;
+                    break;
+                case WM_MBUTTONDOWN:
+                case WM_MBUTTONUP:
+                    mouse_button= BUTTON_MIDDLE;
+                    break;
+            }
+            if(mouse_button != BUTTON_MAX_BUTTONS){
+                input_process_button(mouse_button,pressed);
+            }
+
         }break;
     }
     return DefWindowProcA(hwnd,message,wparam,lparam);

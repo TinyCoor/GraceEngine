@@ -13,10 +13,12 @@ endif ()
 set(HEADERS
         src/core/logger.h
         src/core/asserts.h
+        src/core/input.h
         src/core/event.h
         src/core/application.c
         src/core/kmemory.c
         src/core/event.c
+        src/core/input.c
         src/platform/platform.h
         src/container/darray.h
         src/container/darray.c
