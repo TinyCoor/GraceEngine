@@ -7,6 +7,7 @@
 #include "kmemory.h"
 #include "../game_types.h"
 #include "../platform/platform.h"
+#include "core/event.h"
 
 typedef struct application_state{
     game* game_inst;
@@ -35,14 +36,19 @@ b8 application_create(game* game_inst)
     initialize_logging();
 
     /// todo remove
-    KDEBUG("This is test: %f", 3.1415926);
-    KINFO("This is test: %f",  3.1415926);
-    KERROR("This is test: %f", 3.1415926);
-    KWARN("This is test: %f",  3.1415926);
-    KTRACE("This is test: %f", 3.1415926);
+    KDEBUG("This is test1: %f", 3.1415926);
+    KINFO("This is test2: %f",  3.1415926);
+    KERROR("This is test3: %f", 3.1415926);
+    KWARN("This is test4: %f",  3.1415926);
+    KTRACE("This is test5: %f", 3.1415926);
 
     app_state.is_running = true;
     app_state.is_suspend = false;
+
+    if(!event_initialize()){
+        KERROR("Event Subsystem init failed Application stop");
+        return false;
+    }
 
     if(!platform_startup(&app_state.platform,
                        game_inst->app_config.name,
@@ -90,7 +96,10 @@ b8 application_run()
     }
 
     app_state.is_running =false;
+
+    event_shutdown();
     platform_shutdown(&app_state.platform);
+
     return true;
 
 }

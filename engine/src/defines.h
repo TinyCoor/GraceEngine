@@ -41,9 +41,13 @@ typedef _Bool b8;
 //STATIC_ASSERT(sizeof(f32) == 4, "Expected f32 to be 4 bytes.");
 //STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 
+#ifndef true
 #define true 1
-#define false 0
+#endif
 
+#ifndef false
+#define false 0
+#endif
 /**
  * @brief Any id set to this should be considered invalid,
  * and not actually pointing to a real object. 

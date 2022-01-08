@@ -216,7 +216,7 @@ void platform_console_write(const char *message, u8 colour)
 
 void platform_console_write_error(const char *message, u8 colour)
 {
-    HANDLE console_handle = GetStdHandle(STD_ERROR_HANDLE);
+    HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
     static u8 levels[6] = {64, 4, 6, 2, 1, 9};
     SetConsoleTextAttribute(console_handle, levels[colour]);
 
