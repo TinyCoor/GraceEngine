@@ -9,16 +9,12 @@
 struct static_mesh_data;
 struct platform_state;
 
-bool renderer_initialize(const char* app_name,struct platform_state* plat_state);
+b8 renderer_initialize(const char* app_name,struct platform_state* plat_state);
 void renderer_shutdown();
 
-void renderer_on_resize(uint16_t width,uint16_t height);
+void renderer_on_resize(u16 width,u16 height);
 
-
-
-bool renderer_draw_frame(render_packet* packet);
-
-
+b8 renderer_draw_frame(render_packet* packet);
 
 
 #endif //BACKEND_SRC_RENDER_RENDER_FRONTED_H

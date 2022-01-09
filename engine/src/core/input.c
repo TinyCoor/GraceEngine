@@ -112,7 +112,7 @@ void input_process_mouse_move(i16 x, i16 y) {
     // Only process if actually different
     if (state_ptr->mouse_current.x != x || state_ptr->mouse_current.y != y) {
         // NOTE: Enable this if debugging.
-        KDEBUG("Mouse pos: %i, %i!", x, y);
+        // KDEBUG("Mouse pos: %i, %i!", x, y);
 
         // Update internal state_ptr->
         state_ptr->mouse_current.x = x;

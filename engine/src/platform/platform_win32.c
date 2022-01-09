@@ -4,14 +4,16 @@
 
 #include "platform.h"
 
-
-
 #if KPLATFORM_WINDOWS
 #include "core/input.h"
 #include "core/logger.h"
+#include "container/darray.h"
+
 #include <windows.h>
 #include <windowsx.h>
-
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_win32.h>
+#include "renderer/vulkan/vulkan_types.h"
 
 LRESULT CALLBACK win32_process_message(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
@@ -20,7 +22,9 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, UINT message, WPARAM wparam, L
         case WM_CLOSE:
             /// todo
             return 0;
-        case WM_DESTROY:PostQuitMessage(0);
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            
             return 0;
         case WM_SIZE: {
             /// RECT rect;
@@ -95,6 +99,7 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, UINT message, WPARAM wparam, L
 typedef struct internal_state {
     HINSTANCE h_instance;
     HWND hwnd;
+    VkSurfaceKHR surface;
 } internal_state;
 
 static f64 clock_frequency;
@@ -265,5 +270,30 @@ void platform_sleep(u64 ms)
     Sleep(ms);
 }
 
+void platform_get_require_extension_names(const char*** array)
+{
+    darray_push(*array,&"VK_KHR_win32_surface");
+}
+
+b8 platform_create_vulkan_surface(struct platform_state* plat_state,
+    struct vulkan_context* context)
+{
+    internal_state *state = (internal_state *) (plat_state->internal_state);
+    VkWin32SurfaceCreateInfoKHR create_info ={};
+    create_info.sType =VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    create_info.hinstance  = state->h_instance;
+    create_info.hwnd = state->hwnd;
+    VkResult res = vkCreateWin32SurfaceKHR(context->instance,
+                                      &create_info,
+                                      context->allocator,
+                                      &state->surface);
+    if (res != VK_SUCCESS) {
+        KFATAL("Vulkan Surface create failed");
+        return false;
+
+    }
+    context->surface = state->surface;
+    return true;
+}
 #endif
 

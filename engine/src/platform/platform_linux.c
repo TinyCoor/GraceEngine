@@ -27,8 +27,6 @@
 #include <unistd.h>
 #endif
 
-
-
 typedef struct internal_state{
     Display* display;
     xcb_connection_t* connection;
@@ -276,5 +274,12 @@ void platform_sleep(u64 ms)
 #endif
 
 }
+
+void platform_get_require_extension_names(const char*** array)
+{
+    darray_push(array,&"VK_KHR_xcb_surface");
+}
+
+///todo impl linux surface
 
 //#endif

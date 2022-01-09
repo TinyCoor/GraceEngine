@@ -5,9 +5,11 @@
 #include "application.h"
 #include "logger.h"
 #include "kmemory.h"
-#include "../game_types.h"
-#include "../platform/platform.h"
+#include "game_types.h"
+#include "platform/platform.h"
 #include "core/event.h"
+#include "core/clock.h"
+#include "renderer/renderer_fronted.h"
 #include "input.h"
 
 typedef struct application_state{
@@ -17,6 +19,7 @@ typedef struct application_state{
     platform_state platform;
     i16 width;
     i16 height;
+    clock clk;
     f64 last_time;
 
 }application_state;
@@ -72,6 +75,13 @@ b8 application_create(game* game_inst)
         return false;
     }
 
+    /// init render
+    if(!renderer_initialize(game_inst->app_config.name,&app_state.platform)){
+        KFATAL("Failed to initialized render aborting...");
+        return false;
+    }
+
+    /// init game
     if(!app_state.game_inst->initialize(app_state.game_inst)){
         KERROR("Failed to init game.");
         return false;
@@ -86,6 +96,15 @@ b8 application_create(game* game_inst)
 
 b8 application_run()
 {
+    clock_start(&app_state.clk);
+    clock_update(&app_state.clk);
+
+    app_state.last_time = app_state.clk.elapsed;
+    f64 running_time = 0;
+    f64 frame_count = 0;
+    u8 target_frame_seconds = 1.0 / 60;
+
+
     KINFO(get_memory_usage_str());
     while (app_state.is_running){
         if(!platform_pump_message(&app_state.platform)){
@@ -93,19 +112,49 @@ b8 application_run()
 
         }
         if(!app_state.is_suspend){
-            if(!app_state.game_inst->update(app_state.game_inst,(f32)0)) {
+            clock_update(&app_state.clk);
+            f64 current_time = app_state.clk.elapsed;
+            f64 delta = (current_time- app_state.last_time);
+            f64 frame_start_time = platform_get_absolute_time();
+
+            if(!app_state.game_inst->update(app_state.game_inst,(f32)delta)) {
                 KFATAL("Game Update Failed, shutdown...");
                 app_state.is_running = false;
                 break;
             }
 
-            if(!app_state.game_inst->render(app_state.game_inst,(f32)0)){
+            if(!app_state.game_inst->render(app_state.game_inst,(f32)delta)){
                 KFATAL("Render Failed, shutdown...");
                 app_state.is_running = false;
                 break;
             }
 
-            input_update(0);
+            /// TODO refractor
+            render_packet  packet;
+            packet.delta_time = delta;
+            renderer_draw_frame(&packet);
+
+
+            f64 frame_end_time = platform_get_absolute_time();
+            f64 frame_elapsed_time =frame_end_time - frame_start_time;
+            running_time += frame_elapsed_time;
+            f64 remaining_seconds= target_frame_seconds - frame_elapsed_time;
+
+            if(remaining_seconds > 0){
+                u64 remaining_ms = (remaining_seconds * 1000);
+
+                b8 limit_frames = false;
+                //// give back to os
+                if(remaining_ms > 0 && limit_frames) {
+                    platform_sleep(remaining_ms - 1);
+                }
+                frame_count++;
+            }
+
+            input_update(delta);
+
+            app_state.last_time = current_time;
+
         }
     }
 
@@ -117,6 +166,9 @@ b8 application_run()
 
     input_shutdown();
     event_shutdown();
+
+    renderer_shutdown();
+
     platform_shutdown(&app_state.platform);
 
     return true;

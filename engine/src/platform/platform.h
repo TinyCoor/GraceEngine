@@ -28,9 +28,7 @@ void* platform_set_memory(void* dst,i32 value,u64 size);
 void platform_console_write(const char* message,u8 colour);
 void platform_console_write_error(const char* message,u8 colour);
 
-
 f64 platform_get_absolute_time();
-
 
 void platform_sleep(u64 ms);
 
