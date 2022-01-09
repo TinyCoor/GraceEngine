@@ -16,4 +16,6 @@ void vulkan_device_query_swapchain_support(
     VkSurfaceKHR surface,
     vulkan_swapchain_support_info* out_swapchain_info);
 
+b8 vulkan_device_detect_depth_format(vulkan_device* device);
+
 #endif //BACKEND_ENGINE_SRC_RENDERER_VULKAN_VULKAN_DEVICE_H

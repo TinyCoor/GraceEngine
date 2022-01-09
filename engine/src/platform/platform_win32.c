@@ -5,10 +5,10 @@
 #include "platform.h"
 
 #if KPLATFORM_WINDOWS
-#include "core/input.h"
 #include "core/logger.h"
 #include "container/darray.h"
-
+#include "core/event.h"
+#include "core/input.h"
 #include <windows.h>
 #include <windowsx.h>
 #include <vulkan/vulkan.h>
@@ -19,9 +19,11 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, UINT message, WPARAM wparam, L
 {
     switch (message) {
         case WM_ERASEBKGND:return 1;
-        case WM_CLOSE:
-            /// todo
+        case WM_CLOSE:{
+            event_context data = {};
+            event_fire(EVENT_CODE_APPLICATION_QUIT,0,data);
             return 0;
+        }
         case WM_DESTROY:
             PostQuitMessage(0);
             

@@ -25,9 +25,8 @@ typedef struct vulkan_physical_device_queue_family_info{
     u32 transfer_family_index;
 }vulkan_physical_device_queue_family_info;
 
-
-
 b8 select_physical_device(vulkan_context* context);
+
 b8 physical_device_meet_requirements(
     VkPhysicalDevice physical_device,
     VkSurfaceKHR surface,
@@ -37,7 +36,6 @@ b8 physical_device_meet_requirements(
     vulkan_physical_device_queue_family_info* out_queue_infos,
     vulkan_swapchain_support_info* out_swapchain_info
     );
-
 
 
 b8 vulkan_device_create(vulkan_context* context)
@@ -128,6 +126,16 @@ b8 vulkan_device_create(vulkan_context* context)
                      &context->device.compute_queue);
     KINFO("Queue acquired");
 
+    /// create graphic command pool
+    VkCommandPoolCreateInfo poolCI ={};
+    poolCI.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolCI.queueFamilyIndex = context->device.graphics_queue_index;
+    poolCI.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+    VK_CHECK(vkCreateCommandPool(context->device.logical_device,&poolCI,
+                                 context->allocator,&context->device.graphics_command_pool));
+    KDEBUG("graphics command pool created");
+
     return true;
 }
 
@@ -138,6 +146,13 @@ void vulkan_device_destroy(vulkan_context * context)
     context->device.present_queue = 0;
     context->device.compute_queue = 0;
 
+    KINFO("Destroy command pool");
+    if (context->device.graphics_command_pool){
+        vkDestroyCommandPool(context->device.logical_device,
+                             context->device.graphics_command_pool,
+                             context->allocator);
+        context->device.graphics_command_pool  = 0;
+    }
 
     KINFO("Destroy Logical device");
     if (context->device.logical_device){
@@ -435,7 +450,7 @@ void vulkan_device_query_swapchain_support(
                                          0));
 
     if (out_swapchain_info->format_count !=0) {
-        if (out_swapchain_info->support_formats) {
+        if (!out_swapchain_info->support_formats) {
             out_swapchain_info->support_formats = kallocate(sizeof(VkSurfaceFormatKHR)* out_swapchain_info->format_count,MEMORY_TAG_RENDERER);
         }
         VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device,
@@ -449,7 +464,7 @@ void vulkan_device_query_swapchain_support(
                                                        &out_swapchain_info->present_mode_count,
                                                        0));
     if (out_swapchain_info->present_mode_count != 0) {
-        if (out_swapchain_info->support_present_modes) {
+        if (!out_swapchain_info->support_present_modes) {
             out_swapchain_info->support_present_modes = kallocate(sizeof(VkPresentModeKHR)* out_swapchain_info->present_mode_count,MEMORY_TAG_RENDERER);
         }
 
@@ -459,7 +474,29 @@ void vulkan_device_query_swapchain_support(
                                                            out_swapchain_info->support_present_modes));
 
     }
+}
 
+b8 vulkan_device_detect_depth_format(vulkan_device* device)
+{
+    const u64 candidate_count = 3;
+    VkFormat candidates[3] = {
+        VK_FORMAT_D32_SFLOAT,
+        VK_FORMAT_D32_SFLOAT_S8_UINT,
+        VK_FORMAT_D24_UNORM_S8_UINT,
+    };
 
+    u32 flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    for (u64 i =0 ;i < candidate_count; ++i) {
+        VkFormatProperties  properties;
+        vkGetPhysicalDeviceFormatProperties(device->physical_device,candidates[i],&properties);
+        if ((properties.linearTilingFeatures & flags)  == flags ) {
+            device->depth_format = candidates[i];
+            return true;
+        } else if ((properties.optimalTilingFeatures & flags) == flags){
+            device->depth_format = candidates[i];
+            return true;
+        }
+    }
 
+    return false;
 }

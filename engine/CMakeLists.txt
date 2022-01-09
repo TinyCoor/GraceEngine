@@ -29,6 +29,7 @@ set(HEADERS
         src/core/kstring.h
         src/core/event.h
         src/core/clock.h
+        src/core.h
 
         src/core/clock.c
         src/core/application.c
@@ -36,7 +37,6 @@ set(HEADERS
         src/core/event.c
         src/core/input.c
         src/core/kstring.c
-
 
         src/platform/platform.h
         ${platform_src}
@@ -52,8 +52,17 @@ set(HEADERS
         src/renderer/vulkan/vulkan_backend.h
         src/renderer/vulkan/vulkan_types.h
         src/renderer/vulkan/vulkan_device.h
+        src/renderer/vulkan/vulkan_swapchain.h
+        src/renderer/vulkan/vulkan_image.h
+        src/renderer/vulkan/vulkan_renderpass.h
+        src/renderer/vulkan/vulkan_command_buffer.h
+
         src/renderer/vulkan/vulkan_backend.c
         src/renderer/vulkan/vulkan_device.c
+        src/renderer/vulkan/vulkan_swapchain.c
+        src/renderer/vulkan/vulkan_image.c
+        src/renderer/vulkan/vulkan_renderpass.c
+        src/renderer/vulkan/vulkan_command_buffer.c
         ${render_src}
 
         )

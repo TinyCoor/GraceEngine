@@ -23,32 +23,32 @@ void report_assertion_failure(const char* expression,
                               i32 line);
 
 #define KASSERT(expr)                                                   \
-    {                                                                   \
+    do {                                                                   \
         if(expr){                                                       \
         }else {                                                         \
               report_assertion_failure(#expr,"",__FILE__,__LINE__);     \
               debugBreak();                                             \
         }                                                               \
-    }
+    }while(0)
 
 #define KASSERT_MSG(expr, message) \
-    {                                                                       \
+    do {                                                                       \
         if(expr){                                                           \
         } else {                                                             \
               report_assertion_failure(#expr,message,__FILE__,__LINE__);     \
               debugBreak();                                                  \
         }                                                                    \
-    }
+    }while(0)
 
 #ifdef _DEBUG
 #define KASSERT_DEBUG(expr)                                                   \
-    {                                                                   \
+    do{                                                                   \
         if(expr){                                                       \
         }else {                                                         \
               report_assertion_failure(#expr,"",__FILE__,__LINE__);     \
               debugBreak();                                             \
         }                                                               \
-    }
+    }while(0)
 #else
 #define KASSERT_DEBUG(expr)
 #endif
