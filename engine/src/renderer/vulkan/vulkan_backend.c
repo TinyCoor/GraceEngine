@@ -8,7 +8,6 @@
 #include "core/kstring.h"
 #include "container/darray.h"
 #include "vulkan_platform.h"
-#include "core/asserts.h"
 
 static vulkan_context context;
 static VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
@@ -138,6 +137,13 @@ void vk_shutdown(struct renderer_backend* backend)
 #endif
 
     vulkan_device_destroy(&context);
+
+    KDEBUG("Destroy Surface");
+    if (context.surface){
+        vkDestroySurfaceKHR(context.instance,context.surface,context.allocator);
+        context.surface = 0;
+    }
+
 
     KDEBUG("Destroy vulkan instance...");
     vkDestroyInstance(context.instance,context.allocator);

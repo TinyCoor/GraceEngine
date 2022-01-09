@@ -24,10 +24,16 @@ typedef struct vulkan_swapchain_support_info{
 typedef struct vulkan_device {
     VkPhysicalDevice physical_device;
     VkDevice logical_device;
-    u8 graphics_queue_index;
-    u8 present_queue_index;
-    u8 transfer_queue_index;
-    u8 compute_queue_index;
+    i32 graphics_queue_index;
+    i32 present_queue_index;
+    i32 transfer_queue_index;
+    i32 compute_queue_index;
+
+    VkQueue graphics_queue;
+    VkQueue present_queue;
+    VkQueue transfer_queue;
+    VkQueue compute_queue;
+
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceFeatures features;
     VkPhysicalDeviceMemoryProperties memory;
